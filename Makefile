@@ -10,7 +10,7 @@ LDFLAGS+=-lwebsockets
 
 TARGET=webpipe
 
-.PHONY: all clean
+.PHONY: all clean install
 
 all: $(TARGET)
 
@@ -26,3 +26,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c Makefile
 
 clean:
 	rm -rf $(OBJDIR) $(TARGET)
+
+install: $(TARGET)
+	cp $(TARGET) /usr/local/bin/$(TARGET)
