@@ -1,5 +1,5 @@
 # webpipe
-A simple utility for using websockets on the command line.
+A simple command line websocket utility for piping messages to and from a browser
 
     while true; do date; sleep 1; done | webpipe -f test.html
     
