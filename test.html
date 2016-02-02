@@ -1,14 +1,18 @@
-<html><head>
+<html>
+<head>
 <script>
 var ws;
 window.onload = function() {
   ws = new WebSocket('ws://127.0.0.1:8000');
   ws.onopen = function() {
-    ws.send("Hello world!");
+    ws.send("I've connected!");
   }
   ws.onmessage = function(m) {
-    console.log(m);
+    document.body.innerHTML = m.data;
   }
 }
 </script>
-</head></html>
+<body>
+</body>
+</head>
+</html>
