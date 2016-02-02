@@ -23,3 +23,5 @@ Type what ever you'd like into your terminal.
 - `-p [port]` to specify a port number to serve on.
 - `-f [file]` to host an HTML file (hardcoded mime-type).
 - `-d` to see debug messages in stderr.
+- `-U [max users]` to specify the maximum number of connections.
+- `-B [max buffer size]` to specify the maximum size of any sent message.

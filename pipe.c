@@ -4,17 +4,20 @@
 #include <libwebsockets.h>
 #include <pthread.h>
 
-#define MAX_USERS 1024
-#define MAX_BUFFER 1024
+#define DEFAULT_MAX_USERS   1024
+#define DEFAULT_MAX_BUFFER  1024
+#define DEFAULT_PORT        8000
 
 static struct lws_protocols *protocols;
 static struct lws_context *context;
-static uint16_t port = 8000;
+static uint16_t port = DEFAULT_PORT;
+static uint32_t max_users = DEFAULT_MAX_USERS;
+static uint32_t max_buffer_size = DEFAULT_MAX_BUFFER;
 
 static char *served_html_file;
 
 static pthread_mutex_t users_mutex = PTHREAD_MUTEX_INITIALIZER;
-static struct lws *users[MAX_USERS];
+static struct lws **users;
 static uint32_t num_users;
 
 static int ws_callback(struct lws *wsi,
@@ -103,7 +106,7 @@ void turn_off_errors(void) {
 }
 
 void read_input(void) {
-  char buffer[MAX_BUFFER];
+  char buffer[max_buffer_size];
   uint32_t pos;
   char ch;
   while (read(STDIN_FILENO, &ch,1) > 0) {
@@ -125,10 +128,16 @@ void print_usage() {
 int main(int argc, char *argv[]) {
   int debug_flag = 0;
   int c;
-  while((c = getopt(argc, argv, "p:f:dh?")) != -1) {
+  while((c = getopt(argc, argv, "p:U:B:f:dh?")) != -1) {
     switch (c) {
       case 'p':
         port = atoi(optarg);
+        break;
+      case 'U':
+        max_users = atoi(optarg);
+        break;
+      case 'B':
+        max_buffer_size = atoi(optarg);
         break;
       case 'f':
         served_html_file = optarg;
@@ -143,6 +152,8 @@ int main(int argc, char *argv[]) {
         break;
     }
   }
+
+  users = calloc(max_users, sizeof(struct lws *));
 
   if (!debug_flag) {
     turn_off_errors();
