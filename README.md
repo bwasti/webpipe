@@ -7,8 +7,9 @@ A simple utility for using websockets on the command line.
 
 ## Installation
 
-Install `libwebsockets` (https://libwebsockets.org/index.html)
+Install the latest version of `libwebsockets` [(source here)](https://github.com/warmcat/libwebsockets)
 
+    git clone https://github.com/emgram769/webpipe && cd webpipe
     make
     sudo make install
 
