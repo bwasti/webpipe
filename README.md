@@ -1,7 +1,9 @@
 # webpipe
 A simple utility for using websockets on the command line.
 
-    while true; do echo "Hello World!"; sleep 1; done | webpipe -f "test.html"
+    while true; do date; sleep 1; done | webpipe -f test.html
+    
+![screenshot](http://i.imgur.com/hoXm8Or.png)
 
 ## Installation
 
