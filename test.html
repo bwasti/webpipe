@@ -3,7 +3,7 @@
 <script>
 var ws;
 window.onload = function() {
-  ws = new WebSocket('ws://127.0.0.1:8000');
+  ws = new WebSocket('ws://'+window.location.host);
   ws.onopen = function() {
     ws.send("I've connected!");
   }
