@@ -107,7 +107,7 @@ void turn_off_errors(void) {
 
 void read_input(void) {
   char buffer[max_buffer_size];
-  uint32_t pos;
+  uint32_t pos = 0;
   char ch;
   while (read(STDIN_FILENO, &ch,1) > 0) {
     if (ch == '\n') {
