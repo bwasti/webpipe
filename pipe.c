@@ -82,7 +82,11 @@ static int ws_client_callback(struct lws *wsi,
       fprintf(stderr, "Error attempting to connect: %s\n", (char *)in);
       break;
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
-      fprintf(stderr, "Successfully connected to server\n");
+      fprintf(stderr, "Successfully connected to server.\n");
+      break;
+    case LWS_CALLBACK_CLOSED:
+      fprintf(stderr, "Connection closed.\n");
+      exit(0);
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
       printf("%s\n", (char *)in);
@@ -186,14 +190,14 @@ error:
   return -1;
 }
 
-void *ws_thread_loop(void *args) {
+static void *ws_thread_loop(void *args) {
   while(1) {
     lws_service(context, 50);
   }
   return NULL;
 }
 
-void send_buffer(char *buffer, uint32_t len) {
+static void send_buffer(char *buffer, uint32_t len) {
   char out_buffer[LWS_SEND_BUFFER_PRE_PADDING + len + LWS_SEND_BUFFER_POST_PADDING];
   memset(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], 0, len);
   strncpy(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], buffer, len);
@@ -205,13 +209,13 @@ void send_buffer(char *buffer, uint32_t len) {
   pthread_mutex_unlock(&users_mutex);
 }
 
-void turn_off_errors(void) {
+static void turn_off_errors(void) {
   // Remove errors
   int devnull_fd = open("/dev/null", O_WRONLY);
   dup2(devnull_fd, STDERR_FILENO);
 }
 
-void read_input(void) {
+static void read_input(void) {
   char buffer[max_buffer_size];
   uint32_t pos = 0;
   char ch;
@@ -227,7 +231,7 @@ void read_input(void) {
   }
 }
 
-void print_usage() {
+static void print_usage() {
   printf("webpipe [-p port] [-f file.html] [-d] [server]\n");
 }
 
