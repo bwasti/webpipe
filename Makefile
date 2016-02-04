@@ -8,7 +8,10 @@ OBJS=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 CFLAGS+=$(ENV_CFLAGS)
 LDFLAGS+=$(ENV_LDFLAGS)
 CFLAGS+=-I/usr/include
-LDFLAGS+=-lwebsockets -lpthread
+ifndef STATIC_LIBWEBSOCKETS
+	LDFLAGS+=-lwebsockets
+endif
+LDFLAGS+=-lpthread
 
 TARGET=webpipe
 

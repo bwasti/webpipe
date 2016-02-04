@@ -7,4 +7,4 @@ cd build
 cmake ..
 make
 cd $old_dir
-export ENV_LDFLAGS="-L/tmp/libwebsockets/build/lib" && export ENV_CFLAGS="-I/tmp/libwebsockets/build/lib/Headers" && make
+export ENV_LDFLAGS="-lssl -lcrypto /tmp/libwebsockets/build/lib/libwebsockets.a" && export STATIC_LIBWEBSOCKETS="true" && export ENV_CFLAGS="-I/tmp/libwebsockets/build/lib/Headers" && make
