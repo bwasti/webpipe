@@ -9,8 +9,7 @@ A simple command line websocket utility for piping messages to and from a browse
 
 
     git clone https://github.com/emgram769/webpipe && cd webpipe
-    ./build.sh
-    sudo make install
+    ./build.sh --install
     
 Or you can install the latest version of `libwebsockets` [(source here)](https://github.com/warmcat/libwebsockets)
 and run `make` instead of `./build.sh`.
@@ -18,7 +17,7 @@ and run `make` instead of `./build.sh`.
 
 ## Try it out
 
-    make
+    ./build.sh
     ./webpipe -f test.html
 
 Navigate to `localhost:8000` and open your browser's console.

@@ -83,6 +83,7 @@ static int ws_client_callback(struct lws *wsi,
   switch (reason) {
     case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
       fprintf(stderr, "Error attempting to connect: %s\n", (char *)in);
+      exit(0);
       break;
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
       fprintf(stderr, "Successfully connected to server.\n");

@@ -7,7 +7,7 @@ OBJS=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 
 CFLAGS+=$(ENV_CFLAGS)
 LDFLAGS+=$(ENV_LDFLAGS)
-CFLAGS+=-I/usr/include
+CFLAGS+=-I/usr/include -Wall -O2
 ifndef STATIC_LIBWEBSOCKETS
 	LDFLAGS+=-lwebsockets
 endif
