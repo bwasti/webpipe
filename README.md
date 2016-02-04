@@ -21,8 +21,27 @@ Install the latest version of `libwebsockets` [(source here)](https://github.com
 Navigate to `localhost:8000` and open your browser's console.
 Type what ever you'd like into your terminal.
 
+## Try the client usage
+
+In one shell:
+
+    webpipe
+and in another:
+
+    webpipe localhost:8000
+
 ## Usage
 
+### Typical
+Client:
+
+    webpipe somesite.com
+    
+Server:
+
+    webpipe -p 5000 -f file.html
+    
+### Flags
 - `-p [port]` to specify a port number to serve on.
 - `-f [file]` to host an HTML file (hardcoded mime-type).
 - `-d` to see debug messages in stderr.
