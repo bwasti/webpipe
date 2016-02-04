@@ -20,7 +20,7 @@ static pthread_mutex_t users_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct lws **users;
 static uint32_t num_users;
 
-static int ws_callback(struct lws *wsi,
+static int ws_server_callback(struct lws *wsi,
                        enum lws_callback_reasons reason,
                        void *user,
                        void *in,
@@ -55,11 +55,31 @@ static int ws_callback(struct lws *wsi,
   return 0;
 }
 
+static int ws_client_callback(struct lws *wsi,
+                       enum lws_callback_reasons reason,
+                       void *user,
+                       void *in,
+                       size_t len) {
+  switch (reason) {
+    case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
+      fprintf(stderr, "Error attempting to connect: %s\n", (char *)in);
+      break;
+    case LWS_CALLBACK_CLIENT_ESTABLISHED:
+      break;
+    case LWS_CALLBACK_CLIENT_RECEIVE:
+      printf("%s\n", (char *)in);
+      break;
+    default:
+      break;
+  }
+  return 0;
+}
+
 static int initialize_ws_server(void) {
   struct lws_protocols _protocols[] = {
     {
       "http-only",
-      ws_callback,
+      ws_server_callback,
       0
     },
     { NULL, NULL, 0 }
@@ -74,13 +94,82 @@ static int initialize_ws_server(void) {
   info->extensions = lws_get_internal_extensions();
   context = lws_create_context(info);
   if (context ==  NULL) {
-    return -1;
+    fprintf(stderr, "Unable to create lws context.\n");
+    goto error;
   }
 
   return 0;
+
+error:
+  free(protocols);
+  free(info);
+  return -1;
 }
 
-void *server_thread_loop(void *args) {
+static int initialize_ws_client(char *address) {
+
+  struct lws_protocols _protocols[] = {
+    {
+      "default",
+      ws_client_callback,
+      0
+    },
+    { NULL, NULL, 0 }
+  };
+
+  protocols = malloc(sizeof(_protocols));
+  memcpy(protocols, _protocols, sizeof(_protocols));
+
+  struct lws_context_creation_info *info = calloc(1, sizeof(struct lws_context_creation_info));
+  info->port = CONTEXT_PORT_NO_LISTEN;
+  info->iface = NULL;
+  info->protocols = protocols;
+  info->extensions = lws_get_internal_extensions();
+
+  context = lws_create_context(info);
+  if (context ==  NULL) {
+    fprintf(stderr, "Unable to create lws context.\n");
+    goto error;
+  }
+
+  // Parse out the address:port/path
+  char hostname[100];
+  char path[100];
+  // Defaults
+  port = 80;
+  strcpy(path, "/");
+
+  if (sscanf(address, "%99[^:]:%99hu/%99[^\n]", hostname, &port, &path[1]) < 2) {
+    sscanf(address, "%99[^/]/%99[^\n]", hostname, &path[1]);
+  }
+
+  char address_w_port[1024];
+  sprintf(address_w_port, "%s:%d", hostname, port);
+
+  if (port != 80) {
+    fprintf(stderr, "Connecting to %s on %s\n", address_w_port, path);
+  } else {
+    fprintf(stderr, "Connecting to %s on %s\n", hostname, path);
+  }
+
+  struct lws *client_wsi = lws_client_connect(context, hostname, port, 0, path, address_w_port, NULL, NULL, -1);
+  if (client_wsi == NULL) {
+    fprintf(stderr, "Unable to connect to client.\n");
+    goto error;
+  }
+  users = calloc(1, sizeof(struct lws *));
+  users[0] = client_wsi;
+  num_users = 1;
+
+  return 0;
+
+error:
+  free(protocols);
+  free(info);
+  return -1;
+}
+
+void *ws_thread_loop(void *args) {
   while(1) {
     lws_service(context, 50);
   }
@@ -107,7 +196,7 @@ void turn_off_errors(void) {
 
 void read_input(void) {
   char buffer[max_buffer_size];
-  uint32_t pos;
+  uint32_t pos = 0;
   char ch;
   while (read(STDIN_FILENO, &ch,1) > 0) {
     if (ch == '\n') {
@@ -122,7 +211,7 @@ void read_input(void) {
 }
 
 void print_usage() {
-  printf("webpipe [-p port] [-f file.html] [-d]\n");
+  printf("webpipe [-p port] [-f file.html] [-d] [server]\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -153,16 +242,27 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  users = calloc(max_users, sizeof(struct lws *));
-
   if (!debug_flag) {
     turn_off_errors();
   }
 
-  // Start a server on a different thread.
-  pthread_t server_thread;
-  if (!initialize_ws_server()) {
-    pthread_create(&server_thread, NULL, server_thread_loop, NULL);
+  int err = 0;
+
+  if (argv[optind] != NULL) {
+    fprintf(stderr, "Starting a client connection to %s.\n", argv[optind]);
+    // Start a client
+    err = initialize_ws_client(argv[optind]);
+  } else {
+    fprintf(stderr, "Starting a server.\n");
+    users = calloc(max_users, sizeof(struct lws *));
+    // Start a server
+    err = initialize_ws_server();
+  }
+sleep(1);
+  // Start websocket connection on a different thread.
+  pthread_t ws_thread;
+  if (!err) {
+    pthread_create(&ws_thread, NULL, ws_thread_loop, NULL);
   }
 
   // Read input.
