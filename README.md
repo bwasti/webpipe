@@ -47,6 +47,7 @@ Server:
 ### Flags
 - `-p [port]` to specify a port number to serve on.
 - `-f [file]` to host an HTML file (hardcoded mime-type).
+- `-D [delimiter]` to specify a character other than `\n` as a delimiter.
 - `-d` to see debug messages in stderr.
 - `-U [max users]` to specify the maximum number of connections.
 - `-B [max buffer size]` to specify the maximum size of any sent message.

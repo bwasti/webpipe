@@ -7,6 +7,7 @@
 #define DEFAULT_MAX_USERS   1024
 #define DEFAULT_MAX_BUFFER  1024
 #define DEFAULT_PORT        8000
+#define DEFAULT_DELIMITER   '\n'
 
 static struct lws_protocols *protocols;
 static struct lws_context *context;
@@ -15,6 +16,7 @@ static uint32_t max_users = DEFAULT_MAX_USERS;
 static uint32_t max_buffer_size = DEFAULT_MAX_BUFFER;
 
 static char *served_html_file;
+static char delimiter = DEFAULT_DELIMITER;
 
 static pthread_mutex_t users_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct lws **users;
@@ -200,6 +202,7 @@ static void *ws_thread_loop(void *args) {
 }
 
 static void send_buffer(char *buffer, uint32_t len) {
+  fprintf(stderr, "Sending %s to %d users\n", buffer, num_users);
   char out_buffer[LWS_SEND_BUFFER_PRE_PADDING + len + LWS_SEND_BUFFER_POST_PADDING];
   memset(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], 0, len);
   strncpy(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], buffer, len);
@@ -222,13 +225,18 @@ static void read_input(void) {
   uint32_t pos = 0;
   char ch;
   while (read(STDIN_FILENO, &ch,1) > 0) {
-    if (ch == '\n') {
+    if (ch == delimiter) {
       buffer[pos] = '\0';
       send_buffer(buffer, pos);
       pos = 0;
       continue;
     } else {
       buffer[pos++] = ch;
+    }
+    if (pos >= max_buffer_size) {
+      fprintf(stderr, "Max buffer size exceeded!");
+      send_buffer(buffer, pos);
+      pos = 0;
     }
   }
 }
@@ -240,7 +248,7 @@ static void print_usage() {
 int main(int argc, char *argv[]) {
   int debug_flag = 0;
   int c;
-  while((c = getopt(argc, argv, "p:U:B:f:dh?")) != -1) {
+  while((c = getopt(argc, argv, "p:U:B:f:D:dh?")) != -1) {
     switch (c) {
       case 'p':
         port = atoi(optarg);
@@ -253,6 +261,9 @@ int main(int argc, char *argv[]) {
         break;
       case 'f':
         served_html_file = optarg;
+        break;
+      case 'D':
+        delimiter = optarg[0];
         break;
       case 'd':
         debug_flag = 1;
