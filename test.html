@@ -5,14 +5,29 @@ var ws;
 window.onload = function() {
   ws = new WebSocket('ws://'+window.location.host);
   ws.onopen = function() {
-    ws.send("I've connected!");
   }
   ws.onmessage = function(m) {
-    document.body.innerHTML = m.data;
+    document.getElementById('output').innerHTML = m.data;
   }
 }
 </script>
 <body>
+<div id="output">&nbsp;</div><br>
+<button onclick="ws.send('previous track')"> << </button>
+<button onclick="ws.send('play')"> play</button>
+<button onclick="ws.send('pause')"> pause</button>
+<button onclick="ws.send('next track')"> >> </button>
+<br>
+<br>
+&nbsp;
+&nbsp;
+&nbsp;
+<button onclick="ws.send('up')">^</button>
+<br>
+<button onclick="ws.send('left')"> < </button>
+<button onclick="ws.send('down')"> V </button>
+<button onclick="ws.send('right')"> > </button>
+
 </body>
 </head>
 </html>
