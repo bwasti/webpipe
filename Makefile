@@ -15,7 +15,7 @@ TARGET=webpipe
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS)
 
 $(OBJS): | $(OBJDIR)
 $(OBJDIR):

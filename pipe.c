@@ -113,7 +113,7 @@ static int initialize_ws_server(void) {
   info->port = port;
   info->iface = NULL;
   info->protocols = protocols;
-  info->extensions = lws_get_internal_extensions();
+  info->extensions = NULL;
   context = lws_create_context(info);
   if (context ==  NULL) {
     fprintf(stderr, "Unable to create lws context.\n");
@@ -145,7 +145,7 @@ static int initialize_ws_client(char *address) {
   info->port = CONTEXT_PORT_NO_LISTEN;
   info->iface = NULL;
   info->protocols = protocols;
-  info->extensions = lws_get_internal_extensions();
+  info->extensions = NULL;
 
   context = lws_create_context(info);
   if (context ==  NULL) {
