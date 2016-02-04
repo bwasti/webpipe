@@ -7,11 +7,14 @@ A simple command line websocket utility for piping messages to and from a browse
 
 ## Installation
 
-Install the latest version of `libwebsockets` [(source here)](https://github.com/warmcat/libwebsockets)
 
     git clone https://github.com/emgram769/webpipe && cd webpipe
-    make
+    ./build.sh
     sudo make install
+    
+Or you can install the latest version of `libwebsockets` [(source here)](https://github.com/warmcat/libwebsockets)
+and run `make` instead of `./build.sh`.
+
 
 ## Try it out
 
