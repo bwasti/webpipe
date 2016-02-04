@@ -47,7 +47,19 @@ static int ws_server_callback(struct lws *wsi,
     }
     case LWS_CALLBACK_CLOSED:
     {
-      // Should handle this.
+      pthread_mutex_lock(&users_mutex);
+      // Find the user and remove them
+      int i;
+      for (i = 0; i < num_users; i++) {
+        if (wsi == users[i]) {
+          // If there are users beyond this, move them closer
+          if (i + 1 < num_users) {
+            memmove(&users[i], &users[i+1], (num_users - i - 1) * sizeof(struct lws *));
+          }
+          num_users--;
+        }
+      }
+      pthread_mutex_unlock(&users_mutex);
       break;
     }
     default: break;
@@ -107,7 +119,6 @@ error:
 }
 
 static int initialize_ws_client(char *address) {
-
   struct lws_protocols _protocols[] = {
     {
       "default",
