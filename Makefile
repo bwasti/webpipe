@@ -5,6 +5,8 @@ SRCDIR=.
 SRCS=$(wildcard $(SRCDIR)/*.c)
 OBJS=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 
+CFLAGS+=$(ENV_CFLAGS)
+LDFLAGS+=$(ENV_LDFLAGS)
 CFLAGS+=-I/usr/include
 LDFLAGS+=-lwebsockets -lpthread
 
@@ -15,7 +17,7 @@ TARGET=webpipe
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $^ -o $@ $(EXTRA_LDFLAGS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(OBJS): | $(OBJDIR)
 $(OBJDIR):
