@@ -3,7 +3,7 @@ A simple command line websocket utility for piping messages to and from a browse
 
     while true; do date; sleep 1; done | webpipe -f test.html
     
-![screenshot](http://i.imgur.com/Muh8VUE.png)
+![screenshot](http://i.imgur.com/IlBwCO8.png)
 
 ## Installation
 
