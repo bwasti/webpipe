@@ -30,6 +30,9 @@ static int ws_server_callback(struct lws *wsi,
     {
       if (served_html_file) {
         lws_serve_http_file(wsi, served_html_file, "text/html", NULL, 0);
+        fprintf(stderr, "HTTP Request: serving %s\n", served_html_file);
+      } else {
+        fprintf(stderr, "HTTP Request error: no file to serve (use the -f flag)\n");
       }
       break;
     }
@@ -43,6 +46,7 @@ static int ws_server_callback(struct lws *wsi,
       pthread_mutex_lock(&users_mutex);
       users[num_users++] = wsi;
       pthread_mutex_unlock(&users_mutex);
+      fprintf(stderr, "Connect: %d users\n", num_users);
       break;
     }
     case LWS_CALLBACK_CLOSED:
@@ -60,6 +64,7 @@ static int ws_server_callback(struct lws *wsi,
         }
       }
       pthread_mutex_unlock(&users_mutex);
+      fprintf(stderr, "Disconnect: %d users\n", num_users);
       break;
     }
     default: break;
@@ -77,6 +82,7 @@ static int ws_client_callback(struct lws *wsi,
       fprintf(stderr, "Error attempting to connect: %s\n", (char *)in);
       break;
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
+      fprintf(stderr, "Successfully connected to server\n");
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
       printf("%s\n", (char *)in);
@@ -90,7 +96,7 @@ static int ws_client_callback(struct lws *wsi,
 static int initialize_ws_server(void) {
   struct lws_protocols _protocols[] = {
     {
-      "http-only",
+      "default",
       ws_server_callback,
       0
     },
