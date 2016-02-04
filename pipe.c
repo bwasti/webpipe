@@ -107,7 +107,8 @@ static int initialize_ws_server(void) {
     {
       "default",
       ws_server_callback,
-      0
+      0,
+      max_buffer_size
     },
     { NULL, NULL, 0 }
   };
@@ -138,7 +139,8 @@ static int initialize_ws_client(char *address) {
     {
       "default",
       ws_client_callback,
-      0
+      0,
+      max_buffer_size
     },
     { NULL, NULL, 0 }
   };
