@@ -39,6 +39,7 @@ static int ws_server_callback(struct lws *wsi,
     case LWS_CALLBACK_RECEIVE:
     {
       printf("%s\n", (char *)in);
+      fflush(NULL);
       break;
     }
     case LWS_CALLBACK_ESTABLISHED:
@@ -90,6 +91,7 @@ static int ws_client_callback(struct lws *wsi,
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
       printf("%s\n", (char *)in);
+      fflush(NULL);
       break;
     default:
       break;
