@@ -1,9 +1,14 @@
 # webpipe
 A simple command line websocket utility for piping messages to and from a browser
 
+### Server
+
     while true; do date; sleep 1; done | webpipe -f test.html
+
+### Client
     
-![screenshot](http://i.imgur.com/IlBwCO8.png)
+    webpipe -i '{"type":"subscribe","product_id":"BTC-USD"}' wss://ws-feed.exchange.coinbase.com|sed -n 's/.*price":"\([0-9\.]*\)".*/\1/p'
+
 
 ## Installation
 
