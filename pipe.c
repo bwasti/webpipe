@@ -14,6 +14,7 @@ static struct lws_context *context;
 static uint16_t port = DEFAULT_PORT;
 static uint32_t max_users = DEFAULT_MAX_USERS;
 static uint32_t max_buffer_size = DEFAULT_MAX_BUFFER;
+static uint32_t use_ssl = 0;
 
 static char *served_html_file;
 static char delimiter = DEFAULT_DELIMITER;
@@ -167,6 +168,21 @@ static int initialize_ws_client(char *address) {
   port = 80;
   strcpy(path, "/");
 
+  // Check for ws:// or wss://
+  const char wss_prefix[] = "wss://";
+  const char ws_prefix[] = "ws://";
+
+  size_t wss_prefix_len = sizeof(wss_prefix) - 1;
+  size_t ws_prefix_len = sizeof(ws_prefix) - 1;
+
+  if (strncmp(wss_prefix, address, wss_prefix_len) == 0) {
+    address = &(address[wss_prefix_len]);
+    port = 443;
+    use_ssl = 1;
+  } else if (strncmp(ws_prefix, address, ws_prefix_len) == 0) {
+    address = &(address[ws_prefix_len]);
+  }
+
   if (sscanf(address, "%99[^:]:%99hu/%99[^\n]", hostname, &port, &path[1]) < 2) {
     sscanf(address, "%99[^/]/%99[^\n]", hostname, &path[1]);
   }
@@ -180,7 +196,7 @@ static int initialize_ws_client(char *address) {
     fprintf(stderr, "Connecting to %s on %s\n", hostname, path);
   }
 
-  struct lws *client_wsi = lws_client_connect(context, hostname, port, 0, path, address_w_port, NULL, NULL, -1);
+  struct lws *client_wsi = lws_client_connect(context, hostname, port, use_ssl, path, address_w_port, NULL, NULL, -1);
   if (client_wsi == NULL) {
     fprintf(stderr, "Unable to connect to client.\n");
     goto error;
@@ -251,7 +267,7 @@ static void print_usage() {
 int main(int argc, char *argv[]) {
   int debug_flag = 0;
   int c;
-  while((c = getopt(argc, argv, "p:U:B:f:D:dh?")) != -1) {
+  while((c = getopt(argc, argv, "p:U:B:f:D:sdh?")) != -1) {
     switch (c) {
       case 'p':
         port = atoi(optarg);
@@ -270,6 +286,9 @@ int main(int argc, char *argv[]) {
         break;
       case 'd':
         debug_flag = 1;
+        break;
+      case 's':
+        use_ssl = 2;
         break;
       case 'h':
       case '?':
