@@ -23,7 +23,7 @@ and run `make` instead of `./build.sh`.
 Navigate to `localhost:8000` and open your browser's console.
 Type what ever you'd like into your terminal.
 
-## Try the client usage
+## Use it as a simple chat
 
 In one shell:
 
@@ -34,16 +34,20 @@ and in another:
 
 ## Usage
 
-### Typical
-Client:
+####Client:
 
     webpipe somesite.com
     
-Server:
+for example
+
+    webpipe -i '{"type":"subscribe","product_id":"BTC-USD"}' wss://ws-feed.exchange.coinbase.com
+
+    
+####Server:
 
     webpipe -p 5000 -f file.html
     
-### Flags
+#### Flags
 - `-p [port]` to specify a port number to serve on.
 - `-f [file]` to host an HTML file (hardcoded mime-type).
 - `-i [message]` to send a message once the server is connected.  This is useful for subscription based services.
