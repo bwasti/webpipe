@@ -17,11 +17,14 @@ static uint32_t max_buffer_size = DEFAULT_MAX_BUFFER;
 static uint32_t use_ssl = 0;
 
 static char *served_html_file;
+static char *first_message;
 static char delimiter = DEFAULT_DELIMITER;
 
 static pthread_mutex_t users_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct lws **users;
 static uint32_t num_users;
+
+static void send_buffer(char *buffer, uint32_t len);
 
 static int ws_server_callback(struct lws *wsi,
                        enum lws_callback_reasons reason,
@@ -88,6 +91,9 @@ static int ws_client_callback(struct lws *wsi,
       break;
     case LWS_CALLBACK_CLIENT_ESTABLISHED:
       fprintf(stderr, "Successfully connected to server.\n");
+      if (first_message) {
+        send_buffer(first_message, strlen(first_message));
+      }
       break;
     case LWS_CALLBACK_CLOSED:
       fprintf(stderr, "Connection closed.\n");
@@ -172,8 +178,8 @@ static int initialize_ws_client(char *address) {
   const char wss_prefix[] = "wss://";
   const char ws_prefix[] = "ws://";
 
-  size_t wss_prefix_len = sizeof(wss_prefix) - 1;
-  size_t ws_prefix_len = sizeof(ws_prefix) - 1;
+  size_t wss_prefix_len = strlen(wss_prefix);
+  size_t ws_prefix_len = strlen(ws_prefix);
 
   if (strncmp(wss_prefix, address, wss_prefix_len) == 0) {
     address = &(address[wss_prefix_len]);
@@ -267,7 +273,7 @@ static void print_usage() {
 int main(int argc, char *argv[]) {
   int debug_flag = 0;
   int c;
-  while((c = getopt(argc, argv, "p:U:B:f:D:sdh?")) != -1) {
+  while((c = getopt(argc, argv, "p:U:B:f:i:D:sdh?")) != -1) {
     switch (c) {
       case 'p':
         port = atoi(optarg);
@@ -280,6 +286,9 @@ int main(int argc, char *argv[]) {
         break;
       case 'f':
         served_html_file = optarg;
+        break;
+      case 'i':
+        first_message = optarg;
         break;
       case 'D':
         delimiter = optarg[0];

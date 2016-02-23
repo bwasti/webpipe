@@ -46,6 +46,8 @@ Server:
 ### Flags
 - `-p [port]` to specify a port number to serve on.
 - `-f [file]` to host an HTML file (hardcoded mime-type).
+- `-i [message]` to send a message once the server is connected.  This is useful for subscription based services.
+- `-s` to attempt to connect with SSL.
 - `-D [delimiter]` to specify a character other than `\n` as a delimiter.
 - `-d` to see debug messages in stderr.
 - `-U [max users]` to specify the maximum number of connections.
