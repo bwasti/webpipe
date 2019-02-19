@@ -7,7 +7,6 @@
 #define DEFAULT_MAX_USERS   1024
 #define DEFAULT_MAX_BUFFER  1024
 #define DEFAULT_PORT        8000
-#define DEFAULT_DELIMITER   '\n'
 
 static struct lws_protocols *protocols;
 static struct lws_context *context;
@@ -18,7 +17,6 @@ static uint32_t use_ssl = 0;
 
 static char *served_html_file;
 static char *first_message;
-static char delimiter = DEFAULT_DELIMITER;
 
 static pthread_mutex_t users_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct lws **users;
@@ -44,8 +42,7 @@ static int ws_server_callback(struct lws *wsi,
     }
     case LWS_CALLBACK_RECEIVE:
     {
-      printf("%s\n", (char *)in);
-      fflush(NULL);
+      write(STDOUT_FILENO, in, len);
       break;
     }
     case LWS_CALLBACK_ESTABLISHED:
@@ -100,8 +97,7 @@ static int ws_client_callback(struct lws *wsi,
       exit(0);
       break;
     case LWS_CALLBACK_CLIENT_RECEIVE:
-      printf("%s\n", (char *)in);
-      fflush(NULL);
+      write(STDOUT_FILENO, in, len);
       break;
     default:
       break;
@@ -227,14 +223,14 @@ static void *ws_thread_loop(void *args) {
 }
 
 static void send_buffer(char *buffer, uint32_t len) {
-  fprintf(stderr, "Sending %s to %d users\n", buffer, num_users);
+  fprintf(stderr, "Sending %u byte(s) to %d user(s)\n", (unsigned int)len, num_users);
   char out_buffer[LWS_SEND_BUFFER_PRE_PADDING + len + LWS_SEND_BUFFER_POST_PADDING];
   memset(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], 0, len);
-  strncpy(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], buffer, len);
+  memcpy(&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], buffer, len);
   int i;
   pthread_mutex_lock(&users_mutex);
   for (i = 0; i < num_users; i++) {
-    lws_write(users[i], (unsigned char *)&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], len, LWS_WRITE_TEXT);
+    lws_write(users[i], (unsigned char *)&out_buffer[LWS_SEND_BUFFER_PRE_PADDING], len, LWS_WRITE_BINARY);
   }
   pthread_mutex_unlock(&users_mutex);
 }
@@ -247,22 +243,15 @@ static void turn_off_errors(void) {
 
 static void read_input(void) {
   char buffer[max_buffer_size];
-  uint32_t pos = 0;
-  char ch;
-  while (read(STDIN_FILENO, &ch,1) > 0) {
-    if (ch == delimiter) {
-      buffer[pos] = '\0';
-      send_buffer(buffer, pos);
-      pos = 0;
-      continue;
-    } else {
-      buffer[pos++] = ch;
+  while(1) {
+    int s = read(STDIN_FILENO, buffer, sizeof buffer);
+    if(s < 0) {
+      if(errno == EINTR) continue;
+      perror("read");
+      break;
     }
-    if (pos >= max_buffer_size) {
-      fprintf(stderr, "Max buffer size exceeded!");
-      send_buffer(buffer, pos);
-      pos = 0;
-    }
+    if(s < 1) break;
+    send_buffer(buffer, s);
   }
 }
 
@@ -273,7 +262,7 @@ static void print_usage() {
 int main(int argc, char *argv[]) {
   int debug_flag = 0;
   int c;
-  while((c = getopt(argc, argv, "p:U:B:f:i:D:sdh?")) != -1) {
+  while((c = getopt(argc, argv, "p:U:B:f:i:sdh?")) != -1) {
     switch (c) {
       case 'p':
         port = atoi(optarg);
@@ -289,9 +278,6 @@ int main(int argc, char *argv[]) {
         break;
       case 'i':
         first_message = optarg;
-        break;
-      case 'D':
-        delimiter = optarg[0];
         break;
       case 'd':
         debug_flag = 1;
